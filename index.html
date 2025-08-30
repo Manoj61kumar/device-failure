@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Device Monitoring System - Live Streaming</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="title-icon">🏥</span>
+                    Medical Device Monitoring System
+                    <span class="live-indicator" id="liveIndicator">
+                        <span class="pulse-dot"></span>
+                        LIVE
+                    </span>
+                </h1>
+                <div class="header-actions">
+                    <div class="streaming-controls-header">
+                        <button class="btn btn--primary btn--sm" id="toggleStreamBtn">
+                            <span id="streamBtnIcon">▶️</span>
+                            <span id="streamBtnText">Start Live</span>
+                        </button>
+                        <button class="btn btn--secondary btn--sm" id="soundToggle">
+                            <span id="soundIcon">🔊</span>
+                        </button>
+                        <div class="speed-control">
+                            <label for="speedSlider" class="speed-label">Speed:</label>
+                            <input type="range" id="speedSlider" min="1" max="10" value="2" class="speed-slider">
+                            <span id="speedDisplay">2s</span>
+                        </div>
+                    </div>
+                    <button class="btn btn--secondary btn--sm" id="themeToggle">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                    <button class="btn btn--primary btn--sm" id="exportBtn">
+                        Export Data
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tab-navigation">
+            <div class="nav-tabs">
+                <button class="tab-btn active" data-tab="dashboard">
+                    <span class="tab-icon">🔴</span>
+                    Live Dashboard
+                </button>
+                <button class="tab-btn" data-tab="batch">
+                    <span class="tab-icon">🔬</span>
+                    Batch Prediction
+                </button>
+                <button class="tab-btn" data-tab="manual">
+                    <span class="tab-icon">⚙️</span>
+                    Manual Prediction
+                </button>
+                <button class="tab-btn" data-tab="streaming">
+                    <span class="tab-icon">📡</span>
+                    Streaming Analysis
+                </button>
+                <button class="tab-btn" data-tab="inventory">
+                    <span class="tab-icon">📋</span>
+                    Device Inventory
+                </button>
+                <button class="tab-btn" data-tab="alerts">
+                    <span class="tab-icon">🚨</span>
+                    System Alerts
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Live Dashboard Tab -->
+            <div class="tab-content active" id="dashboard">
+                <div class="dashboard-header">
+                    <div class="dashboard-title-section">
+                        <h2>Live Device Monitoring</h2>
+                        <div class="live-stats">
+                            <div class="live-stat">
+                                <span class="stat-icon">📊</span>
+                                <span class="stat-text">Updates: <span id="updateRate">0</span>/min</span>
+                            </div>
+                            <div class="live-stat">
+                                <span class="stat-icon">⚡</span>
+                                <span class="stat-text">Data Rate: <span id="dataRate">Real-time</span></span>
+                            </div>
+                            <div class="live-stat">
+                                <span class="stat-icon">🔗</span>
+                                <span class="stat-text">Connection: <span id="connectionStatus">Active</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <span class="stat-label">Total Devices</span>
+                            <span class="stat-value" id="totalDevices">24</span>
+                            <span class="stat-change" id="totalChange">+0</span>
+                        </div>
+                        <div class="stat-card status--success">
+                            <span class="stat-label">Healthy</span>
+                            <span class="stat-value" id="healthyDevices">0</span>
+                            <span class="stat-change" id="healthyChange">+0</span>
+                        </div>
+                        <div class="stat-card status--warning">
+                            <span class="stat-label">Warning</span>
+                            <span class="stat-value" id="warningDevices">0</span>
+                            <span class="stat-change" id="warningChange">+0</span>
+                        </div>
+                        <div class="stat-card status--error">
+                            <span class="stat-label">Critical</span>
+                            <span class="stat-value" id="criticalDevices">0</span>
+                            <span class="stat-change" id="criticalChange">+0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div class="chart-section">
+                        <div class="card">
+                            <div class="card__header">
+                                <h3>Live Risk Distribution</h3>
+                                <div class="chart-controls">
+                                    <button class="btn btn--sm btn--outline" id="pauseRiskChart">⏸️</button>
+                                </div>
+                            </div>
+                            <div class="card__body">
+                                <div class="chart-container" style="position: relative; height: 300px;">
+                                    <canvas id="riskChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-section">
+                        <div class="card">
+                            <div class="card__header">
+                                <h3>Live Temperature Stream</h3>
+                                <div class="chart-controls">
+                                    <button class="btn btn--sm btn--outline" id="pauseTempChart">⏸️</button>
+                                </div>
+                            </div>
+                            <div class="card__body">
+                                <div class="chart-container" style="position: relative; height: 300px;">
+                                    <canvas id="temperatureChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-grid" id="deviceGrid">
+                    <!-- Device cards will be populated here -->
+                </div>
+            </div>
+
+            <!-- Batch Prediction Tab -->
+            <div class="tab-content" id="batch">
+                <div class="batch-header">
+                    <h2>Batch ML Prediction Analysis</h2>
+                    <button class="btn btn--primary" id="runBatchBtn">
+                        <span id="batchBtnText">Run XGBoost Analysis</span>
+                        <span class="loading-spinner hidden" id="batchSpinner">⏳</span>
+                    </button>
+                </div>
+                
+                <div class="batch-results" id="batchResults">
+                    <!-- Results table will be populated here -->
+                </div>
+            </div>
+
+            <!-- Manual Prediction Tab -->
+            <div class="tab-content" id="manual">
+                <div class="manual-header">
+                    <h2>Manual Device Analysis</h2>
+                </div>
+                
+                <div class="manual-grid">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Device Parameters</h3>
+                        </div>
+                        <div class="card__body">
+                            <form id="manualForm" class="manual-form">
+                                <div class="form-group">
+                                    <label class="form-label">Device Name</label>
+                                    <select class="form-control" id="manualDeviceName" required>
+                                        <option value="">Select Device</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Temperature (°C)</label>
+                                        <input type="number" class="form-control" id="manualTemp" step="0.1" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Vibration Level</label>
+                                        <input type="number" class="form-control" id="manualVibration" step="0.1" min="0" max="2" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Error Logs</label>
+                                        <input type="number" class="form-control" id="manualErrors" min="0" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Runtime Hours</label>
+                                        <input type="number" class="form-control" id="manualRuntime" min="0" required>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn--primary btn--full-width">
+                                    Analyze Device Risk
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Prediction Results</h3>
+                        </div>
+                        <div class="card__body">
+                            <div id="manualResults" class="prediction-results">
+                                <p class="text-muted">Enter device parameters and click "Analyze Device Risk" to see ML predictions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Streaming Analysis Tab -->
+            <div class="tab-content" id="streaming">
+                <div class="streaming-header">
+                    <h2>Live Data Streaming Control</h2>
+                    <div class="streaming-status">
+                        <div class="status-indicator" id="streamingStatusIndicator">
+                            <span class="status-dot" id="streamingStatusDot"></span>
+                            <span id="streamingStatusText">Stopped</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="streaming-grid">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Live Temperature Feed</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="chart-container" style="position: relative; height: 250px;">
+                                <canvas id="streamingChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Streaming Statistics</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="streaming-stats" id="streamingStats">
+                                <!-- Stats will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Inventory Tab -->
+            <div class="tab-content" id="inventory">
+                <div class="inventory-header">
+                    <h2>Device Inventory Management</h2>
+                    <div class="inventory-controls">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search devices...">
+                        <select class="form-control" id="typeFilter">
+                            <option value="">All Types</option>
+                        </select>
+                        <select class="form-control" id="locationFilter">
+                            <option value="">All Locations</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="inventory-table" id="inventoryTable">
+                    <!-- Table will be populated here -->
+                </div>
+            </div>
+
+            <!-- System Alerts Tab -->
+            <div class="tab-content" id="alerts">
+                <div class="alerts-header">
+                    <h2>System Alerts & Notifications</h2>
+                    <div class="alert-controls">
+                        <button class="btn btn--secondary" id="clearAlertsBtn">Clear All</button>
+                        <div class="alert-stats">
+                            <span>Active: <span id="activeAlertCount">0</span></span>
+                            <span>Critical: <span id="criticalAlertCount">0</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alerts-list" id="alertsList">
+                    <!-- Alerts will be populated here -->
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal for Device Details -->
+    <div class="modal hidden" id="deviceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Device Details</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Device details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Alert Container -->
+    <div class="popup-alert-container" id="popupAlertContainer">
+        <!-- Popup alerts will be dynamically inserted here -->
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast hidden" id="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
