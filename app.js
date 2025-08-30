@@ -3,13 +3,13 @@
 // Device Configuration
 const DEVICE_MAPPING = {
     "Alaris GH": "Infusion Pump",
-    "Baxter Flo-Gard": "Infusion Pump", 
+    "Baxter Flo-Gard": "Infusion Pump",
     "Smiths Medfusion": "Infusion Pump",
     "Baxter AK 96": "Dialysis Machine",
     "Fresenius 4008": "Dialysis Machine",
     "NxStage System One": "Dialysis Machine",
     "Datex Ohmeda S5": "Anesthesia Machine",
-    "Drager Fabius Trio": "Anesthesia Machine", 
+    "Drager Fabius Trio": "Anesthesia Machine",
     "GE Aisys": "Anesthesia Machine",
     "Drager V500": "Patient Ventilator",
     "Hamilton G5": "Patient Ventilator",
@@ -19,7 +19,7 @@ const DEVICE_MAPPING = {
     "Philips HeartStrart": "Defibrillator",
     "Zoll R Series": "Defibrillator",
     "GE Logiq E9": "Ultrasound Machine",
-    "Philips EPIQ": "Ultrasound Machine", 
+    "Philips EPIQ": "Ultrasound Machine",
     "Siemens Acuson": "Ultrasound Machine",
     "Siemens S2000": "Ultrasound Machine",
     "GE Revolution": "CT Scanner",
@@ -28,17 +28,32 @@ const DEVICE_MAPPING = {
     "Phillips PageWriter": "ECG Monitor"
 };
 
-const DEVICE_TYPES = ["Anesthesia Machine", "CT Scanner", "Defibrillator", "Dialysis Machine", "ECG Monitor", "Infusion Pump", "Patient Ventilator", "Ultrasound Machine"];
-const LOCATIONS = ["Hospital A - ICU", "Hospital A - Emergency", "Hospital B - Nephrology", "Hospital B - Cardiology", "Hospital C - Surgery"];
+const DEVICE_TYPES = [
+    "Anesthesia Machine",
+    "CT Scanner",
+    "Defibrillator",
+    "Dialysis Machine",
+    "ECG Monitor",
+    "Infusion Pump",
+    "Patient Ventilator",
+    "Ultrasound Machine"
+];
+const LOCATIONS = [
+    "Hospital A - ICU",
+    "Hospital A - Emergency",
+    "Hospital B - Nephrology",
+    "Hospital B - Cardiology",
+    "Hospital C - Surgery"
+];
 
-// Global Application State
+// Global App State
 let devices = [];
 let alerts = [];
 let isStreaming = false;
 let streamingInterval = null;
 let charts = {};
-let currentTheme = 'light';
-let updateInterval = 2000; // 2 seconds
+let currentTheme = "light";
+let updateInterval = 2000;
 let soundEnabled = false;
 let updateCount = 0;
 let lastStats = { healthy: 0, warning: 0, critical: 0 };
@@ -73,64 +88,66 @@ async function fetchPrediction(device) {
     }
 }
 
-// --------------------- Core Init ----------------------
-document.addEventListener('DOMContentLoaded', function() {
+// --------------------- Init ----------------------
+document.addEventListener("DOMContentLoaded", function () {
     initializeApplication();
     setupEventListeners();
     generateDevices();
     setupCharts();
-    startLiveStreaming(); // Auto-start live streaming
+    startLiveStreaming();
 });
 
 function initializeApplication() {
-    console.log('Initializing Medical Device Monitoring System...');
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        currentTheme = 'dark';
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        currentTheme = "dark";
         updateThemeIcon();
     }
     setupManualForm();
     setupInventoryFilters();
     updateStreamingControls();
-    console.log('Application initialized successfully');
 }
 
+// --------------------- Event Listeners ----------------------
 function setupEventListeners() {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", function (e) {
             e.preventDefault();
-            e.stopPropagation();
-            const tabName = this.getAttribute('data-tab');
+            const tabName = this.getAttribute("data-tab");
             if (tabName) switchTab(tabName);
         });
     });
-    document.getElementById('toggleStreamBtn').addEventListener('click', toggleStreaming);
-    document.getElementById('soundToggle').addEventListener('click', toggleSound);
-    const speedSlider = document.getElementById('speedSlider');
-    speedSlider.addEventListener('input', (e) => {
+
+    document.getElementById("toggleStreamBtn").addEventListener("click", toggleStreaming);
+    document.getElementById("soundToggle").addEventListener("click", toggleSound);
+
+    const speedSlider = document.getElementById("speedSlider");
+    speedSlider.addEventListener("input", (e) => {
         updateInterval = parseInt(e.target.value) * 1000;
-        document.getElementById('speedDisplay').textContent = e.target.value + 's';
+        document.getElementById("speedDisplay").textContent = e.target.value + "s";
         if (isStreaming) restartStreaming();
     });
-    document.getElementById('pauseRiskChart').addEventListener('click', () => {
+
+    document.getElementById("pauseRiskChart").addEventListener("click", () => {
         chartsPaused.risk = !chartsPaused.risk;
-        document.getElementById('pauseRiskChart').textContent = chartsPaused.risk ? '▶️' : '⏸️';
+        document.getElementById("pauseRiskChart").textContent = chartsPaused.risk ? "▶️" : "⏸️";
     });
-    document.getElementById('pauseTempChart').addEventListener('click', () => {
+    document.getElementById("pauseTempChart").addEventListener("click", () => {
         chartsPaused.temperature = !chartsPaused.temperature;
-        document.getElementById('pauseTempChart').textContent = chartsPaused.temperature ? '▶️' : '⏸️';
+        document.getElementById("pauseTempChart").textContent = chartsPaused.temperature ? "▶️" : "⏸️";
     });
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-    document.getElementById('exportBtn').addEventListener('click', exportData);
-    document.getElementById('runBatchBtn').addEventListener('click', runBatchPrediction);
-    document.getElementById('manualForm').addEventListener('submit', handleManualPrediction);
-    document.getElementById('searchInput').addEventListener('input', filterInventory);
-    document.getElementById('typeFilter').addEventListener('change', filterInventory);
-    document.getElementById('locationFilter').addEventListener('change', filterInventory);
-    document.getElementById('closeModal').addEventListener('click', closeModal);
-    document.getElementById('deviceModal').addEventListener('click', (e) => {
-        if (e.target.id === 'deviceModal') closeModal();
+
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+    document.getElementById("exportBtn").addEventListener("click", exportData);
+    document.getElementById("runBatchBtn").addEventListener("click", runBatchPrediction);
+    document.getElementById("manualForm").addEventListener("submit", handleManualPrediction);
+    document.getElementById("searchInput").addEventListener("input", filterInventory);
+    document.getElementById("typeFilter").addEventListener("change", filterInventory);
+    document.getElementById("locationFilter").addEventListener("change", filterInventory);
+    document.getElementById("closeModal").addEventListener("click", closeModal);
+    document.getElementById("deviceModal").addEventListener("click", (e) => {
+        if (e.target.id === "deviceModal") closeModal();
     });
-    document.getElementById('clearAlertsBtn').addEventListener('click', clearAlerts);
+    document.getElementById("clearAlertsBtn").addEventListener("click", clearAlerts);
 }
 
 // --------------------- Device Generation ----------------------
@@ -159,7 +176,6 @@ function generateDevices() {
         };
         devices.push(device);
     }
-    console.log('Generated 24 devices');
 }
 
 // --------------------- Streaming ----------------------
@@ -176,7 +192,6 @@ function startLiveStreaming() {
         updateStreamingMetrics();
         updateCount++;
     }, updateInterval);
-    console.log('Live streaming started');
 }
 
 function stopLiveStreaming() {
@@ -187,7 +202,6 @@ function stopLiveStreaming() {
         streamingInterval = null;
     }
     updateStreamingControls();
-    console.log('Live streaming stopped');
 }
 
 function toggleStreaming() {
@@ -219,20 +233,17 @@ async function updateAllDevicesRealtime() {
         device.currentDraw = Math.max(1, Math.min(15, device.currentDraw));
         device.lastUpdate = new Date();
 
-        // 🔥 Call ML backend
+        // 🔥 Call ML backend instead of local simulation
         await fetchPrediction(device);
     }
 }
 
-// --------------------- The rest (UI, charts, alerts) ----------------------
-// NOTE: Everything else from your original app.js remains unchanged:
+// --------------------- The rest (Charts, UI, Alerts, Inventory) ----------------------
+// Keep your existing functions here unchanged:
 // - updateLiveDashboard()
 // - calculateDeviceStats()
 // - updateDeviceGrid()
-// - setupCharts()
-// - updateCharts()
-// - checkForAlerts()
-// - showPopupAlert()
-// - playAlertSound()
+// - setupCharts(), updateCharts()
+// - checkForAlerts(), showPopupAlert(), playAlertSound()
 // - updateStreamingControls()
-// - plus all helpers for UI/alerts/inventory
+// - Inventory filtering, manual prediction, etc.
